@@ -49,7 +49,7 @@ def main(_):
   model.add(keras.layers.Conv2D(128, (3, 3), activation='relu', padding='same', name='conv2'))
   model.add(keras.layers.AvgPool2D((2, 2), strides=(2, 2), name='pool2'))
 
-  for i in range(20):
+  for i in range(5):
     model.add(keras.layers.Conv2D(128, (3, 3), activation='relu', padding='same', name='conv%d'%(3+i)))
 
   # Decoder
@@ -72,20 +72,19 @@ def main(_):
   hooks = None
   if FLAGS.debug:
     tf.keras.backend.set_session(tf_debug.LocalCLIDebugWrapperSession(tf.Session()))
-    #debug_hook = tf_debug.LocalCLIDebugHook(ui_type=FLAGS.ui_type, dump_root=FLAGS.dump_root)
-    #hooks = [debug_hook]
   
   elif FLAGS.tensorboard_debug_address:
-    debug_hook = tf_debug.TensorBoardDebugHook(FLAGS.tensorboard_debug_address)
-    hooks = [debug_hook]
+    tf.keras.backend.set_session(
+      tf_debug.TensorBoardDebugWrapperSession(tf.Session(), FLAGS.tensorboard_debug_address,
+                                              send_traceback_and_source_code=False))
 
   # Fit model.
-  history = model.fit(x_train,
-                      y_train,
-                      epochs=FLAGS.epochs,
-                      batch_size=32,
-                      validation_data=(x_val, y_val),
-                      verbose=1)
+  model.fit(x_train,
+            y_train,
+            epochs=FLAGS.epochs,
+            batch_size=32,
+            validation_data=(x_val, y_val),
+            verbose=1)
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
